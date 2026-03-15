@@ -40,6 +40,28 @@ public class DataSource {
     return customers;
   }
 
+  public static Accounts getAccounts(String accountid){
+    String sql = "SELECT * FROM accounts WHERE id = ?";
+    Accounts accounts = null;
+    try(Connection connect = connect();
+        PreparedStatement preparedStatement = connect.prepareStatement(sql)){
+      
+          preparedStatement.setString(1, accountid);
+          try(ResultSet resultSet = preparedStatement.executeQuery()){
+            if(resultSet.next()){
+              accounts = new Accounts(
+                resultSet.getInt("id"),
+                resultSet.getString("type"),
+                resultSet.getDouble("balance")
+              );
+            }
+          }
+    } catch (SQLException e) {
+      System.out.println("Error retrieving account: " + e.getMessage());
+    }
+    return accounts;
+  }
+
   public static void main(String[] args) {
     try {
       Customers customers = getCustomers("clillea8@nasa.gov");
@@ -50,6 +72,17 @@ public class DataSource {
       }
     } catch (SQLException e) {
       System.out.println("Error retrieving customer: " + e.getMessage());
+    }
+
+    try {
+      Accounts accounts = getAccounts("10385");
+      if (accounts != null) {
+        System.out.println("Account found: " + accounts.getType() + " with balance " + accounts.getBalance());
+      } else {
+        System.out.println("Account not found.");
+      }
+    } catch (Exception e) {
+      System.out.println("Error retrieving account: " + e.getMessage());
     }
   }
 }
